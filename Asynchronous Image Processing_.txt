@@ -1,0 +1,87 @@
+### 3. Asynchronous Image Processing
+- RabbitMQ is used for the message queue.
+- A separate microservice processes images and uploads them to AWS S3.
+
+#### Implementation Steps
+1. **Producer for RabbitMQ:**
+   - After a product is created, the image URLs are added to RabbitMQ for processing.
+   - Example code for producer:
+     ```go
+     package queue
+
+     import (
+         "github.com/streadway/amqp"
+         "log"
+     )
+
+     func PublishImageURLs(urls []string) {
+         conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+         if err != nil {
+             log.Fatalf("Failed to connect to RabbitMQ: %s", err)
+         }
+         defer conn.Close()
+
+         ch, err := conn.Channel()
+         if err != nil {
+             log.Fatalf("Failed to open a channel: %s", err)
+         }
+         defer ch.Close()
+ q, err := ch.QueueDeclare(
+             "image_queue",
+             false,
+             false,
+             false,
+             false,
+             nil,
+         )
+         if err != nil {
+             log.Fatalf("Failed to declare a queue: %s", err)
+         }
+
+         for _, url := range urls {
+             err = ch.Publish(
+                 "", q.Name, false, false,
+                 amqp.Publishing{
+                     ContentType: "text/plain",
+                     Body:        []byte(url),
+                 },
+             )
+             if err != nil {
+                 log.Printf("Failed to publish a message: %s", err)
+             }
+         }
+     }
+     ```
+
+2. **Consumer for RabbitMQ:**
+   - A microservice consumes messages, processes images (e.g., compression), and uploads them to S3.
+   - Example code for consumer:
+     ```go
+     package queue
+ import (
+         "github.com/streadway/amqp"
+         "log"
+     )
+
+     func ConsumeImageQueue() {
+         conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+         if err != nil {
+             log.Fatalf("Failed to connect to RabbitMQ: %s", err)
+         }
+         defer conn.Close()
+
+         ch, err := conn.Channel()
+         if err != nil {
+             log.Fatalf("Failed to open a channel: %s", err)
+         }
+         defer ch.Close()
+
+         msgs, err := ch.Consume(
+             "image_queue",
+             "",
+             true,
+             false,
+             false,
+             false,
+             nil,
+         )

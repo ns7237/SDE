@@ -1,0 +1,30 @@
+## Project Structure
+
+```plaintext
+├── api
+│   ├── handlers
+│   ├── routes.go
+├── config
+│   ├── config.go
+│   ├── database.go
+├── models
+│   ├── product.go
+│   ├── user.go
+├── queue
+│   ├── producer.go
+│   ├── consumer.go
+├── cache
+│   ├── redis.go
+├── logging
+│   ├── logger.go
+├── services
+│   ├── image_processor.go
+├── tests
+│   ├── api_tests.go
+│   ├── integration_tests.go
+├── main.go
+├── README.md
+├── schema.sql
+├── Dockerfile
+├── docker-compose.yml
+└── .env

@@ -1,0 +1,37 @@
+### 2. Data Storage
+- PostgreSQL is used for storing product and user data.
+- **Schema Design:**
+  ```sql
+  -- Users Table
+  CREATE TABLE users (
+    user_id VARCHAR(20) PRIMARY KEY,
+    user_name VARCHAR(50) NOT NULL
+  );
+
+  -- Products Table
+  CREATE TABLE products (
+    product_id SERIAL PRIMARY KEY,
+    user_id VARCHAR(20) REFERENCES users(user_id),
+    product_name VARCHAR(100) NOT NULL,
+    product_description TEXT,
+    product_images TEXT[] NOT NULL,
+    compressed_product_images TEXT[],
+    product_price DECIMAL(10, 2) NOT NULL
+  );
+  ```
+  - Example User Entry:
+    ```sql
+    INSERT INTO users (user_id, user_name) VALUES ('RA2111003011837', 'Anisha Kumari');
+    ```
+  - Example Product Entry:
+    ```sql
+    INSERT INTO products (user_id, product_name, product_description, product_images, compressed_product_images, product_price)
+    VALUES (
+      'RA2111003011837',
+'Wireless Headphones',
+      'High-quality wireless headphones with noise cancellation.',
+      ARRAY['https://example.com/images/headphone1.jpg', 'https://example.com/images/headphone2.jpg'],
+      ARRAY['https://s3.example.com/compressed/headphone1.jpg', 'https://s3.example.com/compressed/headphone2.jpg'],
+      149.99
+    );
+    ```

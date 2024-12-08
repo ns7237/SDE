@@ -1,0 +1,59 @@
+Set Up Logging:
+
+Install zap using Go modules:
+go get -u go.uber.org/zap
+Create a logging utility file
+package logging
+
+import (
+    "go.uber.org/zap"
+)
+
+var Logger *zap.Logger
+
+func InitLogger() {
+    var err error
+    Logger, err = zap.NewProduction()
+    if err != nil {
+        panic("Failed to initialize logger: " + err.Error())
+    }
+}
+Log Requests and Response Times:
+
+Wrap HTTP handlers with middleware for logging:
+package middleware
+
+import (
+    "net/http"
+    "time"
+
+    "github.com/your_project/logging"
+)
+
+func LoggingMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        start := time.Now()
+        logging.Logger.Info("Request received",
+            zap.String("method", r.Method),
+            zap.String("url", r.URL.Path),
+        )
+        next.ServeHTTP(w, r)
+        logging.Logger.Info("Request completed",
+            zap.String("url", r.URL.Path),
+            zap.Duration("duration", time.Since(start)),
+        )
+    })
+}
+Log Specific Events in Image Processing:
+
+Update the RabbitMQ consumer:
+func processImage(url string) {
+    logging.Logger.Info("Processing image", zap.String("url", url))
+    // Simulate processing
+    success := true // Placeholder for real logic
+    if success {
+        logging.Logger.Info("Image processed successfully", zap.String("url", url))
+    } else {
+        logging.Logger.Error("Image processing failed", zap.String("url", url))
+    }
+}
